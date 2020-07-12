@@ -21,7 +21,7 @@ import { transport } from './utils/mailer';
 dotenv.config();
 
 const app: express.Application = express();
-const port = process.env.SERVER_PORT;
+const port = process.env.PORT || process.env.SERVER_PORT;
 const BASE_URL = '/api/v1';
 
 
