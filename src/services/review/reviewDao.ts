@@ -9,6 +9,11 @@ const reviewSchema: Schema = new Schema(
             type: String,
             required: true
         }],
+        company: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Company',
+            required: [true, 'A review belongs to a company.']
+        },
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
@@ -35,6 +40,6 @@ const reviewSchema: Schema = new Schema(
     }
 );
 
-const ReviewSchema = mongoose.model<IReviewModel>('Review', reviewSchema);
+const ReviewSchema  = mongoose.model<IReviewModel>('Review', reviewSchema);
 
 export default ReviewSchema;

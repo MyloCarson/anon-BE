@@ -25,16 +25,29 @@ export const validateCreateReview = async (req: Request, res: Response, next: Ne
             array: {
                 type: 'string',
                 length: {
-                    maximum: 160 // each review shouldn't be more than 160 characters
+                    minimum: 10,
+                    maximum: 160, // each review shouldn't be more than 160 characters
+                    tooShort: "A review is too short (minimum is %{count} characters)",
+                    tooLong: "A review is too long (maximum is %{count}  characters)"
                 }
             }
         },
-        user: {
-            presence: true,
-        },
-        company_email: {
+        user: {},
+        company_email: '',
+        // company_email: {
+        //     // email: true
+        //     // TODO: email should be check if present
+        // },
+        sector: {
             type: 'string',
-            email: true
+            presence: true,
+            length: {
+                minimum: 22
+            }
+        },
+        company: {
+            type: 'string',
+            presence: true,
         }
     });
 
@@ -57,6 +70,22 @@ export const validateFetchReview = async (req: Request, res: Response, next: Nex
             minimum: 22,
             tooShort: "ID needs to have %{count} words or more",
         }
+    })
+    if (errors) {
+        return responseTransformer.handleError(res,{
+            message: errors,
+            statusCode: 400
+        })
+    }
+
+    return next();
+}
+
+export const validateReviewPagination = async (req: Request, res: Response, next: NextFunction) => {
+    const {size, page } = req.params
+    const errors = validate({ size, page}, {
+        size: { presence: true, type: 'string'},
+        page: { presence: true, type: 'string'}
     })
     if (errors) {
         return responseTransformer.handleError(res,{

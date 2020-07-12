@@ -1,6 +1,7 @@
 import ReviewDao from './reviewDao';
-import {IReview} from './review.schema';
+import {IReview, IReviewWithPagination} from './review.schema';
 import * as _ from 'lodash';
+import { PageParams } from '../../interfaces/page';
 
 export class ReviewService {
     constructor(){}
@@ -10,9 +11,10 @@ export class ReviewService {
             reviewObj.verifiedByUser = true;
         }
         const review = await ReviewDao.create(reviewObj)
-        .then(review => {
+        .then( review => {
             return ReviewDao.findById(review._id)
                 .select('-company_email')
+                .populate('company', '-_id name')
                 .populate('user', '-_id name verified')
                 .lean();
         })
@@ -23,16 +25,60 @@ export class ReviewService {
         return review;
     }
 
+    async paginate(pageParams: PageParams): Promise<IReviewWithPagination> {
+        const size = parseInt(pageParams.size, 10);
+        const page = parseInt(pageParams.page, 10)
+        const skip = size * page - size;
+
+        const reviews =  await ReviewDao.find({deletedAt: null})
+            .select('-updatedAt -deletedAt -company_email')
+            .populate('company', '-_id name')
+            .populate('user', '-_id -token -password -email -createdAt -updatedAt -_v')
+            .lean().skip(skip).limit(size);
+        const count = await ReviewDao.find({deletedAt: null}).countDocuments();
+        const response: IReviewWithPagination =  {
+            reviews: reviews,
+            metadata: {
+                per_page: size,
+                page,
+                page_count: reviews.length ? Math.ceil(count/size): 0,
+                total_count: count,
+                first: (page == 1),
+                last: (page * size >= count),
+            }
+        }
+        return response;
+
+    }
+
     async getAll(): Promise<IReview[]> {
-        return await ReviewDao.find({deletedAt: null})
-            .populate('user', '-_id -token -secret_answer -secret_question')
+        return await ReviewDao.find({deletedAt: null}, null, {sort: { field : 'asc' }})
+            .select('-updatedAt -deletedAt -company_email')
+            .populate('company', '-_id name')
+            .populate('user', '-_id -token -password -email -createdAt -updatedAt -_v')
             .lean();
+
     }
 
     async getReview(id: string): Promise<IReview | null> {
         return await ReviewDao.findOne({_id: id, deletedAt: null})
-            .populate('user', '-_id -token -secret_answer -secret_question')
+            .select('-updatedAt -deletedAt -company_email')
+            .populate('company', '-_id name')
+            .populate('user', '-_id -token -password -email -createdAt -updatedAt -_v')
             .lean();
+    }
+
+    async searchReview(searchTerm: string): Promise<IReview[]> {
+        const reviews: IReview[] = await ReviewDao.find({deletedAt: null})
+            .populate({
+                path: 'company',
+                match: { name: { $regex: '^'+searchTerm, $options: "xi" }},
+                select: '-_id name'
+            })
+            .select('-updatedAt -deletedAt -company_email')
+            .populate('user', '-_id -token -password -email -createdAt -updatedAt -_v')
+            .lean();
+        return reviews.filter( review => review.company !== null)
     }
 
     async remove(reviewID: string): Promise<boolean> {

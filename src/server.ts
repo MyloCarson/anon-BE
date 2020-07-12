@@ -13,6 +13,9 @@ import SecretQuestionRoute from './routes/secretQuestion'
 import UserRoute from './routes/user'
 import ReviewRoute from './routes/review'
 import CommentRoute from './routes/comment';
+import {SocketConnection} from './services/socket'
+import { Server } from 'http';
+import { transport } from './utils/mailer';
 
 // initialize configuration
 dotenv.config();
@@ -41,6 +44,17 @@ app.use(`${BASE_URL}/comments`, CommentRoute)
 app.use(RouteNotFound);
 
 // // start the Express server
-app.listen( port, () => {
+const server:Server = app.listen( port, () => {
     logger.debug( `server started at http://localhost:${ port }` );
 } );
+
+// initialize socket
+export const Socket  = SocketConnection.getInstance().initialize(server);
+
+transport.verify(function (error, success) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Server is ready to take our messages');
+    }
+  });

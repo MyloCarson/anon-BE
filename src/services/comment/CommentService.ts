@@ -3,6 +3,7 @@ import { IComment } from './comment.schema';
 import * as _ from 'lodash';
 
 export class CommentService {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     constructor(){}
 
     async create(commentObj: IComment): Promise<IComment> {
@@ -10,7 +11,7 @@ export class CommentService {
     }
 
     async getCommentByReview(review: string): Promise<IComment[]>{
-        return await CommentDao.find({review: review}).lean();
+        return await CommentDao.find({review: review}).sort({createdAt: 'desc'}) .lean();
     }
 
     async getAll(): Promise<IComment[]>{

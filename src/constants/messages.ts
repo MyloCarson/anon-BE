@@ -10,6 +10,7 @@ export const messages = {
     COMPANY_EXIST: 'Company exits',
     QUESTION_EXIST: 'Question exists',
     UNAUTHORIZED: 'Authorization failed',
-    USER_NOT_FOUND: 'User not found'
+    USER_NOT_FOUND: 'User not found',
+    RESET_LINK_SENT: 'Reset link has been sent to your email'
 
 };
