@@ -7,7 +7,7 @@ import {messages} from '../../constants/messages'
 import ResponseTransformer, { SuccessResponse } from '../../helpers/response';
 import logger from '../../utils/winston';
 import httpCodes from 'http-status-codes';
-
+import { Socket } from '../../server'
 const responseTransformer = new ResponseTransformer();
 
 export const create = (req: Request, res: Response): unknown => {
@@ -24,6 +24,7 @@ export const create = (req: Request, res: Response): unknown => {
             statusCode: httpCodes.CREATED,
             status: messages.SUCCESS,
         }
+        Socket.emit('new-comment', responseObj) //sends new comments over socket
         return responseTransformer.handleSuccess(res, responseObj);
     })
     .catch( error => {

@@ -18,7 +18,7 @@ export class SectorService {
 
     async getAll (): Promise<ISector[]> {
         const sectors: ISector[] = await SectorDao.find({}, '-updatedAt')
-            .sort({ name: "desc" })
+            .sort({ name: 1 })
             .lean();
         return sectors;
     }

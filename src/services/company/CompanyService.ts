@@ -1,5 +1,5 @@
-import CompanyDao from './companyDao'
-import { ICompany } from './company.schema';
+import CompanyDao, { ICompanyModel } from './companyDao'
+import { ICompany, ICompanyWithID } from './company.schema';
 
 export class CompanyService {
     constructor(){ }
@@ -12,7 +12,7 @@ export class CompanyService {
         return companies;
     }
 
-    async create (companyObj: ICompany): Promise<ICompany> {
+    async create (companyObj: ICompany): Promise<ICompanyModel | ICompanyWithID> {
         const company = await CompanyDao.create({
             name: companyObj.name,
             location: companyObj.location,

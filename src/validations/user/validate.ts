@@ -11,30 +11,28 @@ import { v4 as uuidv4 } from 'uuid';
 
 const responseTransformer = new ResponseTransformer();
 
-export const addToken = (userObj: Partial<IUser>): Partial<IUser> => {
-    const _userObj = userObj;
-    let token = uuidv4();
-    token = token.substr(0, token.indexOf('-'));
-    _userObj.token = token.toUpperCase();
+// export const addToken = (userObj: Partial<IUser>): Partial<IUser> => {
+//     const _userObj = userObj;
+//     let token = uuidv4();
+//     token = token.substr(0, token.indexOf('-'));
+//     _userObj.token = token.toUpperCase();
 
-    return _userObj;
-}
+//     return _userObj;
+// }
 
 export const validateCreateUser = async (req: Request, res: Response, next: NextFunction) => {
     const errors = validate(req.body, {
-        name: {
-            type: 'string',
+        email: {
+            presence: true,
+            email: true,
+            type: 'string'
         },
-        secret_question: {
+        password: {
             presence: true,
             type: 'string',
             length: {
-                minimum: 20
+                minimum: 4
             }
-        },
-        secret_answer: {
-            presence: true,
-            type: 'string',
         },
     })
     if(errors){
@@ -45,17 +43,19 @@ export const validateCreateUser = async (req: Request, res: Response, next: Next
     }
 
 
-    let userObj = req.body as Partial<IUser>;
+    const userObj = req.body as Partial<IUser>;
     if(!userObj.name || _.isEmpty(userObj.name) || _.isNull(userObj.name) || userObj.name?.length < 2){
-        userObj.name = randomFullName();
-        userObj = addToken(userObj);
+        userObj.name = randomFullName()
+        userObj.public_id = uuidv4()
+        req.body = userObj
     }
     allServices.userService.getUser(userObj)
     .then( result => {
         if(result) { // if user exists, generate new name and proceed
-            const userObj = req.body as Partial<IUser>;
-            userObj.name = randomFullName();
-            req.body = addToken(userObj);
+            const userObj = req.body as Partial<IUser>
+            userObj.name = randomFullName()
+            userObj.public_id = uuidv4()
+            req.body = userObj
             return next()
         }
 
@@ -71,20 +71,59 @@ export const validateCreateUser = async (req: Request, res: Response, next: Next
 
 export const validateFetchUser = async (req: Request, res: Response, next: NextFunction) => {
     const errors = validate(req.body, {
-        token: {
+        email: {
             presence: true,
             type: 'string',
+            email: true
         },
-        secret_question: {
+        password: {
             presence: true,
             type: 'string',
             length: {
-                minimum: 20
+                minimum: 4
             }
         },
-        secret_answer: {
+    })
+    if(errors){
+        return responseTransformer.handleError(res,{
+            message: errors,
+            statusCode: 400
+        })
+    }
+
+    return next();
+}
+
+export const validateForgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    const errors = validate(req.body, {
+        email: {
             presence: true,
             type: 'string',
+            email: true
+        }
+    })
+    if(errors){
+        return responseTransformer.handleError(res,{
+            message: errors,
+            statusCode: 400
+        })
+    }
+
+    return next();
+}
+
+export const validateReset = async (req: Request, res: Response, next: NextFunction) => {
+    const errors = validate(req.body, {
+        resetToken: {
+            presence: true,
+            type: 'string',
+        },
+        password: {
+            presence: true,
+            type: 'string',
+            length: {
+                minimum: 4
+            }
         },
     })
     if(errors){

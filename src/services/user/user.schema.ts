@@ -1,7 +1,14 @@
 export interface IUser {
     name: string;
-    token: string;
-    verified: boolean;
-    secret_answer: string;
-    secret_question: string;
+    token?: string;
+    verified?: boolean;
+    email: string;
+    password: string;
+    public_id: string;
+    resetToken?: string|null;
+    resetExpire?: number|null;
+}
+
+export interface IUserRequest extends IUser{
+    _id?: string;
 }
