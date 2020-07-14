@@ -31,9 +31,10 @@ export class ReviewService {
         const skip = size * page - size;
 
         const reviews =  await ReviewDao.find({deletedAt: null})
+            .sort({"createdAt": -1})
             .select('-updatedAt -deletedAt -company_email')
             .populate('company', '-_id name')
-            .populate('user', '-_id -token -password -email -createdAt -updatedAt -_v')
+            .populate('user', '-_id -token -password -email -createdAt -updatedAt -resetExpire -resetToken -_v')
             .lean().skip(skip).limit(size);
         const count = await ReviewDao.find({deletedAt: null}).countDocuments();
         const response: IReviewWithPagination =  {
@@ -52,10 +53,11 @@ export class ReviewService {
     }
 
     async getAll(): Promise<IReview[]> {
-        return await ReviewDao.find({deletedAt: null}, null, {sort: { field : 'asc' }})
+        return await ReviewDao.find({deletedAt: null})
+            .sort({"createdAt": -1})
             .select('-updatedAt -deletedAt -company_email')
             .populate('company', '-_id name')
-            .populate('user', '-_id -token -password -email -createdAt -updatedAt -_v')
+            .populate('user', '-_id -token -password -email -createdAt -updatedAt -resetExpire -resetToken -_v')
             .lean();
 
     }
@@ -64,7 +66,7 @@ export class ReviewService {
         return await ReviewDao.findOne({_id: id, deletedAt: null})
             .select('-updatedAt -deletedAt -company_email')
             .populate('company', '-_id name')
-            .populate('user', '-_id -token -password -email -createdAt -updatedAt -_v')
+            .populate('user', '-_id -token -password -email -createdAt -updatedAt -resetExpire -resetToken -_v')
             .lean();
     }
 
@@ -76,7 +78,7 @@ export class ReviewService {
                 select: '-_id name'
             })
             .select('-updatedAt -deletedAt -company_email')
-            .populate('user', '-_id -token -password -email -createdAt -updatedAt -_v')
+            .populate('user', '-_id -token -password -email -createdAt -updatedAt -resetExpire -resetToken -_v')
             .lean();
         return reviews.filter( review => review.company !== null)
     }

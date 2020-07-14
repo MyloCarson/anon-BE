@@ -10,7 +10,6 @@ export class UserService {
     
     async create(userObj: IUser): Promise<IUser> {
         const { password } = userObj;
-        userObj.token = jwt.sign({ public_id: userObj.public_id}, process.env.JWT_SECRET_KEY as string, { expiresIn: process.env.ACCESS_TOKEN_LIFE_SPAN})
         const hash =  bycrpt.hashSync(password, 10)
         userObj.password = hash;
         const user = await UserDao.create(userObj);
@@ -21,13 +20,17 @@ export class UserService {
             delete userData.resetExpire
             delete userData.resetToken
         }
-        console.log('[user dat]',userData)
+        userData.token = jwt.sign({ public_id: userObj.public_id}, process.env.JWT_SECRET_KEY as string, { expiresIn: process.env.ACCESS_TOKEN_LIFE_SPAN})
         return userData
     }
 
     async getUser(userObj: Partial<IUser>): Promise<IUser | null>{
         const user = await UserDao.findOne({email: userObj.email}, '-_id -updatedAt').lean();
-        return user;
+        const _user = user;
+        if(_user){
+            _user.token = jwt.sign({ public_id: _user.public_id}, process.env.JWT_SECRET_KEY as string, { expiresIn: process.env.ACCESS_TOKEN_LIFE_SPAN})
+        }
+        return _user;
     }
 
     async getUserByPublicKey(userObj: Partial<IUser>): Promise<IUser | null>{

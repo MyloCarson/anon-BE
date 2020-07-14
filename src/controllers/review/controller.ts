@@ -11,6 +11,8 @@ import mongoose from 'mongoose';
 import {ICompany} from '../../services/company/company.schema';
 import { RequestWithUser } from '../../middleware/userAuth';
 import { PageParams } from '../../interfaces/page';
+import { Socket } from '../../server'
+
 
 const responseTransformer = new ResponseTransformer();
 interface IReviewWithSector extends IReview {
@@ -26,6 +28,7 @@ const createReview = (reviewObj: IReviewWithSector, res: Response) => {
                 statusCode: httpCodes.CREATED,
                 status: messages.SUCCESS
             };
+            Socket.emit('new-review', result)
             return responseTransformer.handleSuccess(res, responseObj);
         })
         .catch((error) => {
