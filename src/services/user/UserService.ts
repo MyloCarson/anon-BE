@@ -41,8 +41,8 @@ export class UserService {
     async resetPassword(userObj: Partial<IUser>): Promise<IUser | null>{
         const { password, resetToken } = userObj;
         userObj.token = jwt.sign({ public_id: userObj.public_id}, process.env.JWT_SECRET_KEY as string, { expiresIn: process.env.ACCESS_TOKEN_LIFE_SPAN})
-        const hash =  bycrpt.hashSync(password, 10)
-        userObj.password = hash
+        const hash =  bycrpt.hashSync(password, 10);
+        userObj.password = hash;
         const user = await UserDao.findOneAndUpdate({resetToken: resetToken, resetExpire: { $gt: Date.now() }},
         {password: userObj.password, token: userObj.token, resetToken: null, resetExpire: null }).lean()
         const _user = user

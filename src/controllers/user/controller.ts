@@ -11,6 +11,7 @@ import { IUser } from '../../services/user/user.schema';
 import * as bycrpt from 'bcrypt'
 import { sendEmail } from '../../utils/mailer';
 import { PasswordResetTemplate } from "../../utils/emailTemplates/resetPassword";
+import { PasswordResetSuccessTemplate } from '../../utils/emailTemplates/resetPasswordSuccess';
 
 dotenv.config()
 const responseTransformer = new ResponseTransformer();
@@ -105,8 +106,8 @@ export const forgotPassword = (req: Request, res: Response) => {
             status: messages.SUCCESS,
         }
         if(result){
-            const link = process.env.FORGOT_BASE_LINK as string + result.resetToken
-            sendEmail('Password your Anon password.', result.email, PasswordResetTemplate(link))
+            const link = process.env.BASE_FRONTEND as string + 'reset/' + result.resetToken
+            sendEmail('Reset your SafeSpace password.', result.email, PasswordResetTemplate(link))
         }
         return responseTransformer.handleSuccess(res, responseObj);
         
@@ -128,10 +129,11 @@ export const resetPassword = (req: Request, res: Response) => {
         }
 
         const responseObj: SuccessResponse = {
-            data: result,
+            data: '',
             statusCode: httpCodes.OK,
             status: messages.SUCCESS,
         }
+        sendEmail('Password reset on SafeSpace successful.', result.email, PasswordResetSuccessTemplate())
         return responseTransformer.handleSuccess(res, responseObj)
         
     })
@@ -140,5 +142,9 @@ export const resetPassword = (req: Request, res: Response) => {
         const {output} = Boom.badRequest(error);
         return responseTransformer.handleError(res, output)
     });
+}
+
+export const updatePassword = (req: Request, res: Response) => {
+
 }
 

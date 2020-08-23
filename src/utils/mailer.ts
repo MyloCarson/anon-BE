@@ -1,28 +1,30 @@
 import dotenv from 'dotenv';
-dotenv.config();
-
 import nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
+import { SmtpOptions } from 'nodemailer-smtp-transport';
 
-export const transport = nodemailer.createTransport({
-  service: 'gmail',
+dotenv.config();
+
+const options = {
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
   auth: {
-    user: process.env.DEV_EMAIL_ADDRESS,
-    pass: process.env.DEV_EMAIL_PASSWORD
+    user: process.env.EMAIL_ADDRESS,
+    pass: process.env.EMAIL_PASSWORD
   }
-});
+} as SmtpOptions;
+
+export const transport = nodemailer.createTransport(options);
+
 export const sendEmail = (subject: string, recipient: string, template: string): void => {
+  
   const mailOptions: Mail.Options = {
-    from: process.env.DEV_EMAIL_ADDRESS as string,
-    // from: {
-    // //   name: 'Anon',
-    //   address: process.env.DEV_EMAIL_ADDRESS as string
-    // },
+    from: process.env.EMAIL_ADDRESS,
     to: recipient,
     subject: subject,
     html: template,
-    // text: "Hello world?"
   };
+
   transport.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.log(error);
