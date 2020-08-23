@@ -15,11 +15,6 @@ const userSchema: Schema = new Schema(
       type: String,
       required: true,
     },
-    token: {
-      type: String,
-      required: true,
-      default: ''
-    },
     verified: {
       type: Boolean,
       default: false

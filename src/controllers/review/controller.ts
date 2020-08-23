@@ -12,6 +12,7 @@ import {ICompany} from '../../services/company/company.schema';
 import { RequestWithUser } from '../../middleware/userAuth';
 import { PageParams } from '../../interfaces/page';
 import { Socket } from '../../server'
+const legit = require('legit');
 
 
 const responseTransformer = new ResponseTransformer();
@@ -164,4 +165,28 @@ export const search = (req:Request, res: Response) => {
         const { output } = Boom.badRequest(error);
         return responseTransformer.handleError(res, output);
     });
+}
+
+export const checkCompanyEmail = (req: Request, res: Response) => {
+    console.log(legit)
+    legit(req.body.email)
+        .then((result: any) => {
+            result.isValid ? console.log('Valid!') : console.log('Invalid!');
+            const payload = {
+                isValid: result.isValid
+            }
+            const responseObj: SuccessResponse = {
+                data: payload,
+                statusCode: httpCodes.OK,
+                status: messages.SUCCESS
+            };
+            return responseTransformer.handleSuccess(res, responseObj);
+            // console.log(JSON.stringify(result));
+        })
+        .catch((error: any) => { 
+            console.log(error)
+            logger.error('Review Verify email domain : %o', error);
+            const { output } = Boom.badRequest(error);
+            return responseTransformer.handleError(res, output);
+        });
 }
