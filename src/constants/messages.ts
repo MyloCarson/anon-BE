@@ -11,6 +11,8 @@ export const messages = {
     QUESTION_EXIST: 'Question exists',
     UNAUTHORIZED: 'Authorization failed',
     USER_NOT_FOUND: 'User not found',
-    RESET_LINK_SENT: 'Reset link has been sent to your email'
+    RESET_LINK_SENT: 'Reset link has been sent to your email',
+    TOKEN_NOT_FOUND: 'Verification token not found.',
+    EMAIL_VALIDATION: 'Email validation link has been sent to your email'
 
 };

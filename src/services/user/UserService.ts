@@ -16,7 +16,7 @@ export class UserService {
         const userData: IUser = user.toJSON()
         if(userData){
             delete userData.password
-            delete userData.email
+            // delete userData.email
             delete userData.resetExpire
             delete userData.resetToken
         }
@@ -31,6 +31,11 @@ export class UserService {
             _user.token = jwt.sign({ public_id: _user.public_id}, process.env.JWT_SECRET_KEY as string, { expiresIn: process.env.ACCESS_TOKEN_LIFE_SPAN})
         }
         return _user;
+    }
+
+    async validateUser( userObj: Partial<IUser>): Promise<IUser | null> {
+        const user = await UserDao.findOneAndUpdate({email: userObj.email}, {verified: true});
+        return user;
     }
 
     async getUserByPublicKey(userObj: Partial<IUser>): Promise<IUser | null>{
@@ -59,7 +64,7 @@ export class UserService {
     async forgotPassword(userObj: Partial<IUser>): Promise<IUser | null>{
         const resetToken = crypto.randomBytes(160).toString('hex')
         const user = await UserDao.findOneAndUpdate({email: userObj.email}, {resetToken: resetToken, resetExpire:  (Date.now() + 3600000)}).lean()
-        return user
+        return user;
     }
 
     async getAll(): Promise<IUser[]> {
