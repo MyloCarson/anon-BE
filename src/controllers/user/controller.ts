@@ -12,6 +12,10 @@ import * as bycrpt from 'bcrypt'
 import { sendEmail } from '../../utils/mailer';
 import { PasswordResetTemplate } from "../../utils/emailTemplates/resetPassword";
 import { PasswordResetSuccessTemplate } from '../../utils/emailTemplates/resetPasswordSuccess';
+import { EmailVerificationTemplate } from '../../utils/emailTemplates/emailVerification';
+import * as jwt from 'jsonwebtoken'
+import { RequestWithUser } from '../../../src/middleware/userAuth';
+
 
 dotenv.config()
 const responseTransformer = new ResponseTransformer();
@@ -27,15 +31,39 @@ export const create = (req: Request, res: Response): unknown => {
     allServices.userService.create(_user)
     .then(result => {
         const responseObj: SuccessResponse = {
-            data: result,
+            data: messages.EMAIL_VALIDATION,
             statusCode: httpCodes.CREATED,
             status: messages.SUCCESS,
         }
+        const token = jwt.sign({ public_id: result.public_id}, process.env.EMAIL_VALIDATION_SECRET_KEY as string, { expiresIn: process.env.EMAIL_VALIDATION_TOKEN_LIFE_SPAN});
+        const link = process.env.BASE_FRONTEND + 'verify/' + token;
+        sendEmail('Email Verification', result.email, EmailVerificationTemplate(link));
+
         return responseTransformer.handleSuccess(res, responseObj);
     })
     .catch(error => {
         logger.error('User Creation error: %o', error);
         const {output} = Boom.badRequest(error);
+        return responseTransformer.handleError(res, output)
+    })
+}
+
+export const verifyEmail = (req: RequestWithUser, res: Response) => {
+    const user = req.user as IUser;
+    allServices.userService.validateUser(user)
+    .then( result => {
+        if(result){
+            const responseObj: SuccessResponse = {
+                data: null,
+                statusCode: httpCodes.OK,
+                status: messages.SUCCESS,
+            }
+            return responseTransformer.handleSuccess(res, responseObj);
+        }
+    })
+    .catch(error => {
+        logger.error('User Validate error: %o', error);
+        const {output} = Boom.badRequest('token invalid');
         return responseTransformer.handleError(res, output)
     })
 }
