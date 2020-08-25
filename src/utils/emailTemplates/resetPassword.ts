@@ -1,7 +1,7 @@
 export const PasswordResetTemplate = (link: string): string =>
   `
     <head>
-<title>Rating Reminder</title>
+<title>Reset Password</title>
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
 <meta content="width=device-width" name="viewport">
 <style type="text/css">
@@ -50,7 +50,7 @@ export const PasswordResetTemplate = (link: string): string =>
 <table align="center" cellpadding="0" cellspacing="0" class="page-center" style="text-align: left; padding-bottom: 88px; width: 100%; padding-left: 120px; padding-right: 120px;">
 <tbody><tr>
 <td style="padding-top: 24px;">
-<img src="https://d1pgqke3goo8l6.cloudfront.net/wRMe5oiRRqYamUFBvXEw_logo.png" style="width: 56px;">
+<img src="https://res.cloudinary.com/dgv2ytq4r/image/upload/v1598388558/icon_10x-8_xtc6xn.png" style="width: 56px;">
 </td>
 </tr>
 <tr>
