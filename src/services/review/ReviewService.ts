@@ -1,7 +1,9 @@
 import ReviewDao from './reviewDao';
 import {IReview, IReviewWithPagination} from './review.schema';
+import CommentDao from '../comment/commentDao';
 import * as _ from 'lodash';
 import { PageParams } from '../../interfaces/page';
+import { async } from 'validate.js';
 
 export class ReviewService {
     constructor(){}
@@ -25,12 +27,49 @@ export class ReviewService {
         return review;
     }
 
-    async paginate(pageParams: PageParams): Promise<IReviewWithPagination> {
+    async paginateAll (pageParams: PageParams): Promise<IReviewWithPagination> {
+        const query = { deletedAt: null}
+        return this.paginate(query, pageParams);
+    }
+
+    async newest(pageParams: PageParams): Promise<IReviewWithPagination>{
+        const query = { deletedAt: null, createdAt: {'$gt': new Date(new Date().getTime() - (24 * 60 * 60 * 1000))}}
+        return this.paginate(query, pageParams);
+    }
+
+    async trending(pageParams: PageParams): Promise<IReviewWithPagination>{
         const size = parseInt(pageParams.size, 10);
         const page = parseInt(pageParams.page, 10)
         const skip = size * page - size;
 
-        const reviews =  await ReviewDao.find({deletedAt: null})
+        const reviews = await ReviewDao.find({deletedAt:  null, numberOfComment: {'$gt': 5}, createdAt: {'$gt': new Date(new Date().getTime() - (24 * 60 * 60 * 1000))}})
+                                .sort({"createdAt": -1, 'numberOfComment': -1})
+                                .select('-updatedAt -deletedAt -company_email')
+                                .populate('company', '-_id name')
+                                .populate('user', '-_id -token -password -email -createdAt -updatedAt -resetExpire -resetToken -_v')
+                                .lean().skip(skip).limit(size);
+
+        const count = await ReviewDao.find({deletedAt:  null, numberOfComment: {'$gt': 5}, createdAt: {'$gt': new Date(new Date().getTime() - (24 * 60 * 60 * 1000))}}).countDocuments();
+        const response: IReviewWithPagination =  {
+            reviews: reviews,
+            metadata: {
+                per_page: size,
+                page,
+                page_count: reviews.length ? Math.ceil(count/size): 0,
+                total_count: count,
+                first: (page == 1),
+                last: (page * size >= count),
+            }
+        }
+        return response;
+    }
+
+    async paginate(query: object , pageParams: PageParams): Promise<IReviewWithPagination> {
+        const size = parseInt(pageParams.size, 10);
+        const page = parseInt(pageParams.page, 10)
+        const skip = size * page - size;
+
+        const reviews =  await ReviewDao.find(query)
             .sort({"createdAt": -1})
             .select('-updatedAt -deletedAt -company_email')
             .populate('company', '-_id name')
@@ -51,6 +90,13 @@ export class ReviewService {
         return response;
 
     }
+
+    async updateNumberOfComments(reviewID: string): Promise<IReview | null> {
+
+        return  await ReviewDao.updateOne({_id: reviewID}, {'$inc': { numberOfComment: 1}});
+
+    }
+    
 
     async getAll(): Promise<IReview[]> {
         return await ReviewDao.find({deletedAt: null})

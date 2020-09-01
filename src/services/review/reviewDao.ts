@@ -30,6 +30,10 @@ const reviewSchema: Schema = new Schema(
             type: Boolean,
             default: false
         },
+        numberOfComment: {
+            type: Number,
+            default: 0
+        },
         deletedAt: {
             type: Date,
             default: null

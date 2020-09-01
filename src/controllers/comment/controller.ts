@@ -19,6 +19,7 @@ export const create = (req: Request, res: Response): unknown => {
     }
     allServices.commentService.create(commentObj)
     .then( result => {
+        allServices.reviewService.updateNumberOfComments(commentObj.review); // updates the metrics for counting trending
         const responseObj: SuccessResponse = {
             data: result,
             statusCode: httpCodes.CREATED,

@@ -111,11 +111,51 @@ export const remove = (req: Request, res: Response) => {
         });
 };
 
-export const paginate = (req: Request, res: Response) => {
+export const paginateAll = (req: Request, res: Response) => {
     const { size, page} = req.params
     const pageParams: PageParams = { size, page} 
     allServices.reviewService
-        .paginate(pageParams)
+        .paginateAll(pageParams)
+        .then((result) => {
+            const responseObj: SuccessResponse = {
+                data: result,
+                statusCode: httpCodes.OK,
+                status: messages.SUCCESS
+            };
+            return responseTransformer.handleSuccess(res, responseObj);
+        })
+        .catch((error) => {
+            logger.error('Review GET ALL : %o', error);
+            const { output } = Boom.badRequest(error);
+            return responseTransformer.handleError(res, output);
+        });
+};
+
+export const newest = (req: Request, res: Response) => {
+    const { size, page} = req.params
+    const pageParams: PageParams = { size, page} 
+    allServices.reviewService
+        .newest(pageParams)
+        .then((result) => {
+            const responseObj: SuccessResponse = {
+                data: result,
+                statusCode: httpCodes.OK,
+                status: messages.SUCCESS
+            };
+            return responseTransformer.handleSuccess(res, responseObj);
+        })
+        .catch((error) => {
+            logger.error('Review GET ALL : %o', error);
+            const { output } = Boom.badRequest(error);
+            return responseTransformer.handleError(res, output);
+        });
+};
+
+export const trending = (req: Request, res: Response) => {
+    const { size, page} = req.params
+    const pageParams: PageParams = { size, page} 
+    allServices.reviewService
+        .trending(pageParams)
         .then((result) => {
             const responseObj: SuccessResponse = {
                 data: result,

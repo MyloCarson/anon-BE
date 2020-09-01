@@ -7,6 +7,7 @@ export interface IReview {
     company_email: string;
     verifiedByUser: boolean;
     verifiedByAdmin: boolean;
+    numberOfComment?: number;
     deletedAt: Date | null;
 }
 
