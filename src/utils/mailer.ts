@@ -19,7 +19,10 @@ export const transport = nodemailer.createTransport(options);
 export const sendEmail = (subject: string, recipient: string, template: string): void => {
   
   const mailOptions: Mail.Options = {
-    from: process.env.EMAIL_ADDRESS,
+    from: {
+      name: 'SafeSpace',
+      address: process.env.EMAIL_ADDRESS as string
+    },
     to: recipient,
     subject: subject,
     html: template,
